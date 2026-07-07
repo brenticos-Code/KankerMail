@@ -1125,10 +1125,13 @@ func (m model) renderStatusBar(styles UIStyles, width int) string {
 
 func main() {
 	webMode := flag.Bool("web", false, "Start KankerMail in Web UI server mode")
+	guiMode := flag.Bool("gui", false, "Start KankerMail in native desktop GUI mode")
 	port := flag.Int("port", 8080, "Port to run the Web UI server on")
 	flag.Parse()
 
-	if *webMode {
+	if *guiMode {
+		startGui()
+	} else if *webMode {
 		startWebServer(*port)
 	} else {
 		p := tea.NewProgram(initialModel(), tea.WithAltScreen())

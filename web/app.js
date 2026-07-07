@@ -197,7 +197,7 @@ function setupEventListeners() {
 // Fetch Configurations
 async function fetchConfig() {
     try {
-        const response = await fetch('/api/config');
+        const response = await apiRequest('/api/config');
         if (response.ok) {
             state.config = await response.json();
             
@@ -330,7 +330,7 @@ async function fetchEmails() {
             url += `&q=${encodeURIComponent(state.searchQuery)}`;
         }
         
-        const response = await fetch(url);
+        const response = await apiRequest(url);
         if (response.ok) {
             const data = await response.json();
             state.emails = data.emails || [];
@@ -472,7 +472,7 @@ async function fetchEmailBody(emailId) {
     elements.viewBodyMarkup.style.display = 'block';
 
     try {
-        const response = await fetch(`/api/email?id=${emailId}&folder=${state.activeFolder}`);
+        const response = await apiRequest(`/api/email?id=${emailId}&folder=${state.activeFolder}`);
         if (response.ok) {
             const data = await response.json();
             // Store rich contents
@@ -541,7 +541,7 @@ function renderEmailBody(email) {
 // General API Save Settings
 async function saveSettingsAPI(configData) {
     try {
-        const response = await fetch('/api/config', {
+        const response = await apiRequest('/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(configData)
@@ -568,7 +568,7 @@ async function toggleActionAPI(action, id, val) {
         if (val !== undefined) {
             payload.value = val;
         }
-        const response = await fetch('/api/action', {
+        const response = await apiRequest('/api/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -648,7 +648,7 @@ async function handleSendEmail(e) {
     };
 
     try {
-        const response = await fetch('/api/send', {
+        const response = await apiRequest('/api/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -677,7 +677,7 @@ async function handleSendEmail(e) {
 // Dynamic unread count loader
 async function updateUnreadCounts() {
     try {
-        const response = await fetch('/api/folders');
+        const response = await apiRequest('/api/folders');
         if (response.ok) {
             const data = await response.json();
             const inboxCountObj = data.folders.find(f => f.name === 'inbox');
@@ -786,4 +786,42 @@ function showToast(message, isError = false) {
         toast.style.animation = 'fadeOut 0.3s ease-out forwards';
         setTimeout(() => toast.remove(), 300);
     }, 4000);
+}
+
+// Unified API request helper supporting both local servers and native GUI frames
+async function apiRequest(path, options = {}) {
+    const method = options.method || 'GET';
+    const body = options.body || '';
+    
+    // Dynamically resolve native functions to prevent race conditions during boot
+    const nativeFunc = typeof window.goRequest === 'function' ? window.goRequest :
+                       (typeof goRequest === 'function' ? goRequest : null);
+    
+    if (nativeFunc) {
+        try {
+            // Route through Go native Webview binding
+            const responseText = await nativeFunc(method, path, body);
+            
+            // Parse response status and body from native bridge wrapper
+            const responseObj = JSON.parse(responseText);
+            const isOk = responseObj.status >= 200 && responseObj.status < 300;
+            
+            return {
+                ok: isOk,
+                status: responseObj.status,
+                text: async () => responseObj.body,
+                json: async () => JSON.parse(responseObj.body)
+            };
+        } catch (err) {
+            console.error("Native bridge request failure:", err);
+            return {
+                ok: false,
+                status: 500,
+                text: async () => err.message
+            };
+        }
+    } else {
+        // Standard Web HTTP Server mode
+        return fetch(path, options);
+    }
 }
