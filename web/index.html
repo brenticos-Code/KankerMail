@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KankerMail - Premium Web Client</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-neon-dark">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">KANKERMAIL</span>
+            </div>
+            
+            <div class="mode-indicator" id="modeIndicator">
+                <span class="indicator-dot"></span>
+                <span class="indicator-text">Mode: Local Mock</span>
+            </div>
+
+            <button class="compose-btn" id="composeBtn">
+                <span class="btn-icon">✏️</span>
+                <span class="btn-text">Compose Email</span>
+            </button>
+
+            <nav class="folders-nav">
+                <ul id="folderList">
+                    <li data-folder="inbox" class="active">
+                        <span class="folder-icon">📥</span>
+                        <span class="folder-name">Inbox</span>
+                        <span class="unread-count" id="inboxUnread">0</span>
+                    </li>
+                    <li data-folder="starred">
+                        <span class="folder-icon">⭐</span>
+                        <span class="folder-name">Starred</span>
+                    </li>
+                    <li data-folder="sent">
+                        <span class="folder-icon">📤</span>
+                        <span class="folder-name">Sent</span>
+                    </li>
+                    <li data-folder="drafts">
+                        <span class="folder-icon">📝</span>
+                        <span class="folder-name">Drafts</span>
+                    </li>
+                    <li data-folder="archive">
+                        <span class="folder-icon">📦</span>
+                        <span class="folder-name">Archive</span>
+                    </li>
+                    <li data-folder="trash">
+                        <span class="folder-icon">🗑️</span>
+                        <span class="folder-name">Trash</span>
+                    </li>
+                    <li data-folder="settings">
+                        <span class="folder-icon">⚙️</span>
+                        <span class="folder-name">Settings</span>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="connection-status" id="connectionStatus">Connected</div>
+            </div>
+        </aside>
+
+        <!-- Email List Pane -->
+        <section class="email-list-pane">
+            <header class="pane-header">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search emails...">
+                    <button class="clear-search" id="clearSearch" style="display:none;">&times;</button>
+                </div>
+                <div class="list-title-row">
+                    <h1 id="folderTitle">Inbox</h1>
+                    <span class="email-count" id="emailCount">0 messages</span>
+                </div>
+            </header>
+
+            <div class="email-list-container">
+                <div class="loader" id="listLoader" style="display:none;">
+                    <div class="spinner"></div>
+                    <span class="loading-text">Syncing with server...</span>
+                </div>
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <span class="empty-icon">📭</span>
+                    <span class="empty-title">No messages</span>
+                    <span class="empty-desc">This folder is empty.</span>
+                </div>
+                <div class="email-list" id="emailList">
+                    <!-- Dynamic email cards inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Email Viewer Pane -->
+        <section class="email-viewer-pane">
+            <div class="viewer-empty-state" id="viewerEmptyState">
+                <span class="viewer-empty-icon">✉️</span>
+                <span class="viewer-empty-title">Select a message</span>
+                <span class="viewer-empty-desc">Choose an email from the list to read its content.</span>
+            </div>
+
+            <div class="viewer-content" id="viewerContent" style="display:none;">
+                <header class="viewer-header">
+                    <div class="viewer-meta-row">
+                        <h2 id="viewSubject">Security alert for your account</h2>
+                        <div class="viewer-actions">
+                            <button class="action-btn" id="viewStarBtn" title="Star Email">⭐</button>
+                            <button class="action-btn" id="viewReplyBtn" title="Reply">↩️ Reply</button>
+                            <button class="action-btn" id="viewDeleteBtn" title="Delete">🗑️ Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="viewer-sender-card">
+                        <div class="sender-avatar" id="senderAvatar">G</div>
+                        <div class="sender-details">
+                            <div class="sender-from-row">
+                                <span class="sender-name" id="viewFromName">Google</span>
+                                <span class="sender-email" id="viewFromEmail">&lt;no-reply@accounts.google.com&gt;</span>
+                            </div>
+                            <div class="sender-to-row">
+                                <span class="to-label">to:</span>
+                                <span class="to-value" id="viewTo">brentlamote0@gmail.com</span>
+                            </div>
+                        </div>
+                        <div class="viewer-date" id="viewDate">Tue Jul 7, 2026, 9:09 PM</div>
+                    </div>
+                </header>
+
+                <div class="viewer-body-container">
+                    <div class="viewer-body-markup" id="viewBodyMarkup">
+                        <!-- Raw text/Markdown body gets inserted here -->
+                    </div>
+                    <iframe class="viewer-body-html" id="viewBodyHtml" style="display:none;" sandbox="allow-same-origin">
+                        <!-- Rich HTML body rendered here securely -->
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Settings Interface Overlay inside View Pane -->
+            <div class="settings-content" id="settingsContent" style="display:none;">
+                <header class="settings-header">
+                    <h2>⚙️ Settings Panel</h2>
+                    <p>Customize the behavior and appearance of KankerMail</p>
+                </header>
+
+                <div class="settings-form">
+                    <!-- General Settings -->
+                    <div class="settings-section">
+                        <h3>General Configuration</h3>
+                        <div class="form-group toggle-group">
+                            <div class="form-label-desc">
+                                <label for="mockModeToggle">Local Simulation (Mock Mode)</label>
+                                <span class="field-desc">Simulate email actions locally instead of connecting to a real IMAP/SMTP server.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="mockModeToggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="form-group toggle-group">
+                            <div class="form-label-desc">
+                                <label for="htmlRichToggle">Rich HTML Rendering</label>
+                                <span class="field-desc">Enable parsing and display of styled HTML email bodies. Falls back to plain text if disabled.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="htmlRichToggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Theme Selection -->
+                    <div class="settings-section">
+                        <h3>Visual Theme</h3>
+                        <span class="field-desc">Select a theme stylesheet to customize color scheme.</span>
+                        <div class="theme-grid">
+                            <div class="theme-card" data-theme="neon-dark">
+                                <div class="theme-preview neon-dark-prev"></div>
+                                <span class="theme-name">Neon Dark</span>
+                            </div>
+                            <div class="theme-card" data-theme="dracula">
+                                <div class="theme-preview dracula-prev"></div>
+                                <span class="theme-name">Dracula</span>
+                            </div>
+                            <div class="theme-card" data-theme="catppuccin">
+                                <div class="theme-preview catppuccin-prev"></div>
+                                <span class="theme-name">Catppuccin Macchiato</span>
+                            </div>
+                            <div class="theme-card" data-theme="nord">
+                                <div class="theme-preview nord-prev"></div>
+                                <span class="theme-name">Nord</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connection Credentials -->
+                    <div class="settings-section">
+                        <h3>IMAP & SMTP Server Configuration</h3>
+                        <p class="section-notice">Real server settings. Saved locally in <code>kankermail.json</code>.</p>
+                        
+                        <div class="server-config-columns">
+                            <div class="server-config-box">
+                                <h4>📥 IMAP Server (Receiving)</h4>
+                                <div class="form-row">
+                                    <label>Host:</label>
+                                    <input type="text" id="imapHost" placeholder="imap.gmail.com">
+                                </div>
+                                <div class="form-row inline-row">
+                                    <div>
+                                        <label>Port:</label>
+                                        <input type="number" id="imapPort" placeholder="993">
+                                    </div>
+                                    <div class="checkbox-container">
+                                        <input type="checkbox" id="imapSSL">
+                                        <label for="imapSSL">SSL/TLS</label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <label>Username:</label>
+                                    <input type="text" id="imapUser" placeholder="username@gmail.com">
+                                </div>
+                                <div class="form-row">
+                                    <label>Password:</label>
+                                    <input type="password" id="imapPass" placeholder="App password">
+                                </div>
+                            </div>
+
+                            <div class="server-config-box">
+                                <h4>📤 SMTP Server (Sending)</h4>
+                                <div class="form-row">
+                                    <label>Host:</label>
+                                    <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                                </div>
+                                <div class="form-row inline-row">
+                                    <div>
+                                        <label>Port:</label>
+                                        <input type="number" id="smtpPort" placeholder="465">
+                                    </div>
+                                    <div class="checkbox-container">
+                                        <input type="checkbox" id="smtpSSL">
+                                        <label for="smtpSSL">SSL/TLS</label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <label>Username:</label>
+                                    <input type="text" id="smtpUser" placeholder="username@gmail.com">
+                                </div>
+                                <div class="form-row">
+                                    <label>Password:</label>
+                                    <input type="password" id="smtpPass" placeholder="App password">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="save-settings-btn" id="saveSettingsBtn">Save Configuration</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Compose Modal Dialog -->
+    <div class="modal-overlay" id="composeModal" style="display:none;">
+        <div class="compose-modal">
+            <header class="modal-header">
+                <h3>New Message</h3>
+                <button class="close-modal" id="closeComposeBtn">&times;</button>
+            </header>
+            <form class="compose-form" id="composeForm">
+                <div class="compose-field">
+                    <label for="composeTo">To:</label>
+                    <input type="email" id="composeTo" required placeholder="recipient@example.com">
+                </div>
+                <div class="compose-field">
+                    <label for="composeSubject">Subject:</label>
+                    <input type="text" id="composeSubject" required placeholder="Enter subject line...">
+                </div>
+                <div class="compose-body-field">
+                    <textarea id="composeBody" required placeholder="Type your message here..."></textarea>
+                </div>
+                <footer class="compose-footer">
+                    <button type="button" class="btn btn-secondary" id="discardComposeBtn">Discard</button>
+                    <button type="submit" class="btn btn-primary" id="sendComposeBtn">
+                        <span class="btn-text">Send Message</span>
+                        <div class="mini-spinner" style="display:none;"></div>
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
