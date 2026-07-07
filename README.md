@@ -9,3 +9,11 @@ and SMTP settings.
 These need an "App-Password"
 
 Let me know if theres a problem.
+
+
+(an example of running the web based ui)
+"./kankermail -web -port 8080"
+
+
+
+WEB IS IN ACTIVE DEVELOPMENT. ERRORS WILL OCCUR.
